@@ -8,7 +8,7 @@ import java.io.*;
  *  found words.
  *  
  *  @author Lyndsey Rice for Dean Hendrix of Auburn University (some structure provided by Dr Hendrix)
- *  @version Last updated: July 4th, 2022
+ *  @version Last updated: July 10th, 2022
  *
  */
 
@@ -177,7 +177,7 @@ public class WordSearch implements WordSearchGame {
            words.add(currentWord.toUpperCase());
         }
             
-        if (isValidPrefix(currentWord)) {
+        else if (isValidPrefix(currentWord)) {
            searchBoardPrefix(current, minimumWordLength);
         }    
         
@@ -186,7 +186,7 @@ public class WordSearch implements WordSearchGame {
       // Run another check over each word to catch bad apples (special thanks to Dean Hendrix for suggestion
       // to finalize "words").
       for (String word : words) {
-         if (!isValidWord(word)) {
+         if (isValidWord(word) == false) {
             words.remove(word);
          }
       }
@@ -286,7 +286,7 @@ public class WordSearch implements WordSearchGame {
       if (lexicon.contains(wordToCheck)) {
          return true;
       }
-      
+            
       return false;
    }
    
@@ -418,32 +418,31 @@ public class WordSearch implements WordSearchGame {
       
       // if the size of intList is 0, do this set instead (starting new)
       if (intList.size() == 0) {
-         boolean tfTest = true;
+         boolean tfTest = false;
+         int letterPosition = 0;
          // while the position var is less than N^2, check recursively for words being on the board
-         while (position < (N * N)) {
+         while (position < (N * N) && !tfTest) {
             
             // see if wordToCheck starts with the current intList but as a word
             String newString = new Position(position).current;
-            String wordToCheckString = Character.toString(wordToCheck.charAt(position));
+            String wordToCheckString = Character.toString(wordToCheck.charAt(letterPosition));
             if (wordToCheckString.equalsIgnoreCase(newString)) {
                intList.add(position);
                position++;
+               letterPosition++;
+               tfTest = true;
                continue;
             } else if (wordToCheckString.equalsIgnoreCase(newString) == false) {
+               position++;
                tfTest = false;
-               break;
+               continue;
             }
          }            
          
-         // if the wordToCheck is the current intList as a string, return the intList.
-         if (tfTest == true) {
-            return intList;   
-         }
-         
-      }
+       }
       
       // if intList already has elements, start here
-      else if (intList.size() > 0 && wordToCheck.equals(turnIntoWord(intList)) == false) {
+      if (intList.size() > 0 && wordToCheck.equals(turnIntoWord(intList)) == false) {
          
          // use breadth-first to examine all the 1-radius neighbors for a match
          Position[] neighbors = new Position(position).findNeighbors(intList);
@@ -483,12 +482,11 @@ public class WordSearch implements WordSearchGame {
       if (wordToCheck.equals(intListWord)) {
          return intList;
       }
-      
-      // otherwise, remove the last int from intList (backtrack) and return new intList
-      else {
+    
+      if (intList != null) {
          intList.removeLast();
-         return intList;
-      }  
+      }
+      return searchBoard(wordToCheck, intList, position++);
    }
     
  
