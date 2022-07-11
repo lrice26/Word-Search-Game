@@ -10,7 +10,7 @@ import java.io.*;
  *  system defined in the class WordSearch(), to provide a fast and reliable game. 
  *  
  *  @author Lyndsey Rice
- *  @version July 4th, 2022
+ *  @version July 10th, 2022
  */
 
 class gui implements ActionListener {
@@ -41,14 +41,15 @@ class gui implements ActionListener {
         activeWordSearch.loadLexicon("words_medium.txt");
     
         // Frame container
-        JFrame frame = new JFrame("Word Search");
+        JFrame frame = new JFrame("Add-One Word Search Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(650, 700);
         
         // Primary text area - where the word search boards will be shown
         JTextArea mainTextArea = new JTextArea();
-        String welcomeMessageOriginal = "\n\n\tWelcome to Word Search!\n\n\tPlease choose a board from the drop down "
-         + "menu above, or click Help to read full instructions.\n\n\tThanks for playing!";
+        String welcomeMessageOriginal = "\n\n\n\t\t   Welcome to Add-One Word Search!\n\n\t  Please choose a board from the drop down "
+         + "menu \n\t  above, or click Help to read full instructions.\n\n\t\t\t      Thanks for playing!";
+        mainTextArea.setFont(new Font("Times", Font.BOLD, 20));
         mainTextArea.setTabSize(3);
         mainTextArea.setEditable(false);
         mainTextArea.setLineWrap(true);
@@ -70,7 +71,6 @@ class gui implements ActionListener {
         // note: bottomPanel will be added only when word search boards are visible
         frame.getContentPane().add(BorderLayout.NORTH, menuBar);
         frame.getContentPane().add(BorderLayout.CENTER, mainTextArea);
-        frame.setVisible(true);
         
         // On click, displays popup menu with complete instructions
         JMenuItem menuItemHelp = new JMenuItem(new AbstractAction("Instructions") {
@@ -93,10 +93,12 @@ class gui implements ActionListener {
         JMenuItem menuItemHome = new JMenuItem(new AbstractAction("Welcome") {
            @Override
            public void actionPerformed(ActionEvent e) {
-              String welcomeMessage = "\n\n\tWelcome to Word Search!\n\n\tPlease choose a board from the drop down "
-               + "menu above, or click Help to read full instructions.\n\n\tThanks for playing!";
-               mainTextArea.setFont(new Font("Times", Font.PLAIN, 13));
-               mainTextArea.setText(welcomeMessage);
+              mainTextArea.setFont(new Font("Times", Font.BOLD, 20));
+              mainTextArea.setTabSize(3);
+              mainTextArea.setEditable(false);
+              mainTextArea.setLineWrap(true);
+              mainTextArea.setWrapStyleWord(true);
+              mainTextArea.setText(welcomeMessageOriginal);
                
                frame.getContentPane().remove(bottomPanel);
            }
@@ -147,12 +149,42 @@ class gui implements ActionListener {
               wordsFoundByUser = new String[10];
            }
         });
-        
+
+       
+        // On click, generates and displays a random board using the randomBoard class.
+        JMenuItem menuItemRandomBoard = new JMenuItem(new AbstractAction("Random Board") {
+           @Override
+           public void actionPerformed(ActionEvent e) {
+              mainTextArea.setColumns(10);
+              mainTextArea.setRows(10);
+              
+              // create a new dynamically generated 10 x 10 board with at least 15 valid words
+              randomBoard randomBoardObj = new randomBoard(10, 15);
+              randomBoardObj.generateBoard();
+              
+              mainTextArea.setText(randomBoardObj.getBoard());
+              
+              Font font = new Font("Times", mainTextArea.getFont().getStyle(), 20);
+              mainTextArea.setFont(font);
+              mainTextArea.setTabSize(3);
+              mainTextArea.setEditable(false);
+              
+              frame.getContentPane().add(BorderLayout.SOUTH, bottomPanel);
+              
+              activeWordSearch.setBoard(randomBoardObj.getBoardArray());
+              allWordsOnBoard = activeWordSearch.getAllScorableWords(4);
+              
+              // reset this to empty string array to prepare for user to play
+              wordsFoundByUser = new String[10];
+           }
+        });
+
+       
         // Add menus to menuBar        
         menuBar.add(menuWordSearch);
         menuBar.add(menuHelp);
         menuBar.add(menuHome);
-        
+                
         // Add menu items to each menu
         menuHelp.add(menuItemHelp);
 
@@ -160,6 +192,7 @@ class gui implements ActionListener {
         
         menuWordSearch.add(menuItemBoard1);
         menuWordSearch.add(menuItemBoard2);
+        menuWordSearch.add(menuItemRandomBoard);
         
         // On click, checks user input for conditions then checks if valid word on board,
         // and adding word to first available place in wordsFoundByUser array.
@@ -175,11 +208,12 @@ class gui implements ActionListener {
                  JOptionPane.showMessageDialog(frame, "Error: all words found. Please start a new game.", "Error", JOptionPane.PLAIN_MESSAGE);
               }
               
-              if (wordToTest.length() < 3 || wordToTest.length() > 10) {
-                 JOptionPane.showMessageDialog(frame, "Word must be at least 3 letters and no more than 10.", "Error", JOptionPane.PLAIN_MESSAGE);
+              if (wordToTest.length() <= 3 || wordToTest.length() > 10) {
+                 JOptionPane.showMessageDialog(frame, "Word must be at least 4 letters and no more than 10.", "Error", JOptionPane.PLAIN_MESSAGE);
+                 foundWordTextField.setText("");
               }
               
-              if (allWordsOnBoard.contains(wordToTest)) {
+              else if (allWordsOnBoard.contains(wordToTest)) {
                  for (int i = 0; i < wordsFoundByUser.length; i++) {
                     if (wordsFoundByUser[i] != null) {
                        if (wordsFoundByUser[i].equalsIgnoreCase(wordToTest)) {
@@ -240,7 +274,9 @@ class gui implements ActionListener {
         bottomPanel.add(foundWordTextField);
         bottomPanel.add(checkIsValidButton);
         bottomPanel.add(showAllFoundButton);
-                           
+        
+        // set frame to visible
+        frame.setVisible(true);                       
     }
     
     
